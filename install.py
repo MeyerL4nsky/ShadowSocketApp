@@ -57,14 +57,36 @@ def How2Uninstall():
 		      "docker-common docker-latest docker-latest-logroatate "\
 		      "docker-logrotate docker-selinux docker-engine-selinux "\
                       "docker-engine"
-def InstallSSCLI():
-	print "Installing SS client."
-
 def InstallSSServer():
 	print "Installing SS Server."
 
+def InstallSSCLI():
+	print "Installing SS Client."
+	process = Popen(['sudo','docker', 'search', 'shadowsocks'], stdout=PIPE, stderr=PIPE)
+	lines={}
+	lineCnt = 0
+	while True:
+		line = process.stdout.readline()
+		if line!='':
+			lines[lineCnt] = "{LineNumber}: {LineContent}".format(LineNumber=lineCnt, LineContent=line) 
+			print lines[lineCnt]
+			lineCnt = lineCnt+1
+		else:
+			break;
+	chosenSS =  lines[int(raw_input( "Choose 1 shadowsocks(enter index)to deploy: "))]
+	chosenName = chosenSS.split()[1]
+	#print ':'.join(x.encode('hex') for x in chosenSS)
+	print "You choose {ImageName}. Pull image...".format(ImageName = chosenName)
+	process = Popen(['sudo', 'docker', 'pull', chosenName], stdout=PIPE, stderr=PIPE)
+	process.wait()
+	if chosenName == "mritd/shadowsocks":
+		print "Install  mritd/shadowsocks..."
+	else:
+		print "Since we only support mritd/shadowsocks, which is most stars shadowsocks."
+		print "For your own pereference,  please refer to: "
+		print "https://hub.docker.com/r/{ImageName}".format(ImageName = chosenName)
+	
 #Main Process
-
 def main():
 	#Check Docker on local machine
 	process = Popen(['docker', '-v'], stdout=PIPE, stderr=PIPE)
@@ -87,7 +109,7 @@ def main():
 	if raw_input("Enter 'c' for CLI, otherwise for Server: ") == 'c':
 		InstallSSCLI()
 	else:
-		print "Installing SS Server"
+		InstallSSServer()
 
 if __name__ == "__main__":
 	main()
